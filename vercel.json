@@ -1,0 +1,3 @@
+{
+  "crons": [{ "path": "/api/poll-reddit", "schedule": "*/5 * * * *" }]
+}
