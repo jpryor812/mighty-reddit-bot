@@ -1,6 +1,5 @@
 import { fetchNewPosts } from "@/lib/reddit";
 import { insertPost } from "@/lib/supabase";
-import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -29,37 +28,20 @@ const RELEVANCE_KEYWORDS = [
   "personal injury",
 ];
 
-const TWENTY_FOUR_HOURS_AGO = () => Math.floor(Date.now() / 1000) - 24 * 60 * 60;
-
 function isRelevant(title: string, body: string): boolean {
   const text = `${title} ${body}`.toLowerCase();
   return RELEVANCE_KEYWORDS.some((kw) => text.includes(kw.toLowerCase()));
 }
 
 export async function GET() {
-  const headersList = await headers();
-  const authorization = headersList.get("authorization");
-  const expectedToken = `Bearer ${process.env.CRON_SECRET}`;
-
-  if (authorization !== expectedToken) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const cutoff = TWENTY_FOUR_HOURS_AGO();
   let inserted = 0;
   let skipped = 0;
-  let tooOld = 0;
 
   for (const subreddit of SUBREDDITS) {
     try {
-      const posts = await fetchNewPosts(subreddit, 100);
+      const posts = await fetchNewPosts(subreddit, 5);
 
       for (const post of posts) {
-        if (post.created_utc < cutoff) {
-          tooOld++;
-          continue;
-        }
-
         if (!isRelevant(post.title, post.body)) {
           skipped++;
           continue;
@@ -78,5 +60,5 @@ export async function GET() {
     }
   }
 
-  return Response.json({ inserted, skipped, tooOld });
+  return Response.json({ inserted, skipped });
 }
