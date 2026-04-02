@@ -36,6 +36,7 @@ function isRelevant(title: string, body: string): boolean {
 export async function GET() {
   let inserted = 0;
   let skipped = 0;
+  const errors: string[] = [];
 
   for (const subreddit of SUBREDDITS) {
     try {
@@ -51,14 +52,16 @@ export async function GET() {
           await insertPost(post);
           inserted++;
         } catch (err) {
-          console.error(`Failed to insert post ${post.reddit_id}:`, err);
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`insert ${post.reddit_id}: ${msg}`);
           skipped++;
         }
       }
     } catch (err) {
-      console.error(`Failed to fetch posts from r/${subreddit}:`, err);
+      const msg = err instanceof Error ? err.message : String(err);
+      errors.push(`fetch r/${subreddit}: ${msg}`);
     }
   }
 
-  return Response.json({ inserted, skipped });
+  return Response.json({ inserted, skipped, errors });
 }

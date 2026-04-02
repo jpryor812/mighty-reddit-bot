@@ -27,9 +27,10 @@ const supabase = createClient(
 );
 
 export async function insertPost(post: NewPost): Promise<void> {
+  const { reddit_id, subreddit, title, body, url, reddit_score } = post;
   const { error } = await supabase
     .from("posts")
-    .upsert(post, { onConflict: "reddit_id" });
+    .upsert({ reddit_id, subreddit, title, body, url, reddit_score }, { onConflict: "reddit_id" });
 
   if (error) {
     throw new Error(`Failed to insert post: ${error.message}`);
