@@ -5,6 +5,7 @@ export interface RedditPost {
   body: string;
   url: string;
   reddit_score: number;
+  created_utc: number;
 }
 
 interface RedditListingChild {
@@ -50,5 +51,6 @@ export async function fetchNewPosts(subreddit: string, limit: number): Promise<R
     body: child.data.selftext,
     url: child.data.url,
     reddit_score: child.data.score,
+    created_utc: child.data.created_utc,
   }));
 }
