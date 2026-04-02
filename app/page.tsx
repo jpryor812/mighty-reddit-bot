@@ -28,7 +28,7 @@ export default async function Home() {
           <div className="text-center py-20 text-gray-400">
             <p className="text-lg font-medium mb-2">No posts yet</p>
             <p className="text-sm">
-              The cron job will poll Reddit every 5 minutes and surface relevant posts here.
+              The cron job will read posts from Reddit every 5 minutes and surface relevant posts here.
             </p>
           </div>
         ) : (
