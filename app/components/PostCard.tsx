@@ -92,7 +92,7 @@ export default function PostCard({ post }: PostCardProps) {
           href={post.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-gray-900 font-semibold text-base leading-snug hover:text-orange-600 transition-colors mb-3"
+          className="block text-gray-900 font-semibold text-base leading-snug hover:text-orange-600 hover:underline transition-colors mb-3"
         >
           {post.title}
         </a>
@@ -183,6 +183,14 @@ export default function PostCard({ post }: PostCardProps) {
               >
                 {copied ? "Copied ✓" : "Copy Reply"}
               </button>
+              <a
+                href={post.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Post on Reddit ↗
+              </a>
             </div>
           </div>
           <textarea
