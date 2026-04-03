@@ -71,9 +71,9 @@ export async function POST(request: Request) {
         continue;
       }
     } catch (err) {
+      // If OpenAI classification fails, allow the post through so we can
+      // confirm whether the issue is OpenAI or something else entirely.
       console.error(`Classification failed for ${post.reddit_id}:`, err);
-      skipped++;
-      continue;
     }
 
     try {
