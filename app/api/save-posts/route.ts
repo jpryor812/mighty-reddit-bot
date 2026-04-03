@@ -1,6 +1,8 @@
 import { classifyPost } from "@/lib/claude";
 import { insertPost } from "@/lib/supabase";
 
+const AI_CLASSIFICATION_ENABLED = true;
+
 export const dynamic = "force-dynamic";
 
 interface IncomingPost {
@@ -64,16 +66,17 @@ export async function POST(request: Request) {
       continue;
     }
 
-    try {
-      const relevant = await classifyPost(post.title, post.body);
-      if (!relevant) {
-        skipped++;
-        continue;
+    if (AI_CLASSIFICATION_ENABLED) {
+      try {
+        const relevant = await classifyPost(post.title, post.body);
+        console.log(`[classify] ${post.reddit_id}: ${relevant ? "yes" : "no"} — "${post.title.slice(0, 60)}"`);
+        if (!relevant) {
+          skipped++;
+          continue;
+        }
+      } catch (err) {
+        console.error(`Classification failed for ${post.reddit_id}:`, err);
       }
-    } catch (err) {
-      // If OpenAI classification fails, allow the post through so we can
-      // confirm whether the issue is OpenAI or something else entirely.
-      console.error(`Classification failed for ${post.reddit_id}:`, err);
     }
 
     try {
