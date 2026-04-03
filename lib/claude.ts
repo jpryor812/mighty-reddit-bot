@@ -5,9 +5,13 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _openai;
+}
 
 const SYSTEM_PROMPT = `You are a knowledgeable, empathetic advisor helping someone navigate a personal injury insurance claim. You work for Mighty (mighty.com), a free AI-powered service that helps accident victims understand what their claim is worth and negotiate fair settlements without needing a lawyer.
 
@@ -52,7 +56,7 @@ Be conservative. When in doubt, answer "no".
 Answer only "yes" or "no". No explanation.`;
 
 export async function classifyPost(title: string, body: string): Promise<boolean> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: "gpt-5-nano",
     max_completion_tokens: 5,
     messages: [

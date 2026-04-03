@@ -96,7 +96,7 @@ export default function RefreshFeed() {
       setFetchResult(`+${inserted} new posts`);
       setSecondsAgo(0);
       redditPollSeconds.current = 0;
-      router.refresh();
+      try { router.refresh(); } catch { /* ignore refresh errors */ }
     } catch (err) {
       console.error("Fetch failed:", err);
       setFetchResult("Fetch failed");
