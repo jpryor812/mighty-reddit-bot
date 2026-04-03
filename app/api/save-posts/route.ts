@@ -15,14 +15,10 @@ interface IncomingPost {
   created_utc: number;
 }
 
-// Pre-filter to reduce Claude Haiku calls. At least one of these must appear
-// in the title or body before Claude is consulted.
-const PRE_FILTER_KEYWORDS = [
-  "injury",
-  "injured",
-  "pain",
-  "lawyer",
-  "attorney",
+// Must contain at least one intent keyword AND one of the required core words.
+const REQUIRED_CORE_WORDS = ["injury", "injur", "pain", "hurt", "lawyer", "attorney"];
+
+const INTENT_KEYWORDS = [
   "settlement",
   "insurance claim",
   "at fault",
@@ -40,11 +36,15 @@ const PRE_FILTER_KEYWORDS = [
   "negotiate",
   "workers comp",
   "workers compensation",
+  "retainer",
+  "claim",
 ];
 
 function passesPreFilter(title: string, body: string): boolean {
   const text = `${title} ${body}`.toLowerCase();
-  return PRE_FILTER_KEYWORDS.some((kw) => text.includes(kw));
+  const hasCore = REQUIRED_CORE_WORDS.some((w) => text.includes(w));
+  const hasIntent = INTENT_KEYWORDS.some((kw) => text.includes(kw));
+  return hasCore && hasIntent;
 }
 
 export async function POST(request: Request) {
