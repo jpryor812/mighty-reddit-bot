@@ -1,3 +1,4 @@
+import { classifyPost } from "@/lib/claude";
 import { insertPost } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -12,24 +13,36 @@ interface IncomingPost {
   created_utc: number;
 }
 
-const RELEVANCE_KEYWORDS = [
-  "settlement",
-  "offer",
-  "should I hire",
-  "do I need a lawyer",
-  "insurance claim",
+// Pre-filter to reduce Claude Haiku calls. At least one of these must appear
+// in the title or body before Claude is consulted.
+const PRE_FILTER_KEYWORDS = [
   "injury",
-  "accident",
-  "negotiate",
-  "is this fair",
+  "injured",
+  "pain",
+  "lawyer",
   "attorney",
-  "PI claim",
+  "settlement",
+  "insurance claim",
+  "at fault",
+  "liable",
+  "liability",
+  "medical bills",
+  "adjuster",
+  "demand letter",
   "personal injury",
+  "PI claim",
+  "uninsured",
+  "underinsured",
+  "sue",
+  "lawsuit",
+  "negotiate",
+  "workers comp",
+  "workers compensation",
 ];
 
-function isRelevant(title: string, body: string): boolean {
+function passesPreFilter(title: string, body: string): boolean {
   const text = `${title} ${body}`.toLowerCase();
-  return RELEVANCE_KEYWORDS.some((kw) => text.includes(kw.toLowerCase()));
+  return PRE_FILTER_KEYWORDS.some((kw) => text.includes(kw));
 }
 
 export async function POST(request: Request) {
@@ -46,9 +59,20 @@ export async function POST(request: Request) {
   const errors: string[] = [];
 
   for (const post of posts) {
-    if (!isRelevant(post.title, post.body)) {
+    if (!passesPreFilter(post.title, post.body)) {
       skipped++;
       continue;
+    }
+
+    try {
+      const relevant = await classifyPost(post.title, post.body);
+      if (!relevant) {
+        skipped++;
+        continue;
+      }
+    } catch (err) {
+      // If Claude call fails, fall back to allowing the post through
+      console.error(`Classification failed for ${post.reddit_id}:`, err);
     }
 
     try {

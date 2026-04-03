@@ -25,9 +25,45 @@ Rules:
 7. Do not make specific legal guarantees or promise specific settlement outcomes.
 8. Never tell someone they definitely do or don't need a lawyer — frame it as options and tradeoffs.`;
 
+const CLASSIFY_PROMPT = `You are a relevance filter for Mighty, a personal injury insurance service.
+
+Decide if this Reddit post is from someone who needs help with ANY of:
+- A personal injury claim (car accident, slip and fall, workplace injury, etc.)
+- Understanding or negotiating an insurance settlement offer
+- Deciding whether to hire a personal injury lawyer
+- Dealing with medical bills after an accident
+- An insurance claim dispute or denial
+- Understanding their legal rights after being injured
+
+Answer only "yes" or "no". No explanation.
+
+A post is NOT relevant if it is:
+- Just describing an accident with no personal involvement or question
+- A general curiosity question with no personal legal situation
+- About criminal law, divorce, employment law, or other non-PI topics
+- Clearly spam or karma farming with no real question`;
+
+export async function classifyPost(title: string, body: string): Promise<boolean> {
+  const message = await client.messages.create({
+    model: "claude-3-haiku-20240307",
+    max_tokens: 5,
+    system: CLASSIFY_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: `Post title: ${title}\n\nPost body: ${body}`,
+      },
+    ],
+  });
+
+  const content = message.content[0];
+  if (content.type !== "text") return false;
+  return content.text.trim().toLowerCase().startsWith("yes");
+}
+
 export async function generateReply(title: string, body: string): Promise<string> {
   const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
+    model: "claude-3-5-sonnet-20241022",
     max_tokens: 1024,
     system: SYSTEM_PROMPT,
     messages: [
