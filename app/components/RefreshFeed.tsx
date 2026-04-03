@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 const SUBREDDITS: Array<{ name: string; limit: number }> = [
   { name: "legaladvice", limit: 50 },
-  { name: "AskALawyer", limit: 50 },
+  { name: "AskLawyers", limit: 50 },
   { name: "Insurance", limit: 25 },
   { name: "personalfinance", limit: 25 },
   { name: "caraccidents", limit: 25 },
