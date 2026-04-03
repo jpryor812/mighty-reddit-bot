@@ -34,24 +34,22 @@ Rules:
 7. Do not make specific legal guarantees or promise specific settlement outcomes.
 8. Never tell someone they definitely do or don't need a lawyer — frame it as options and tradeoffs.`;
 
-const CLASSIFY_PROMPT = `You are a strict relevance filter for Mighty, a personal injury insurance claims service.
+const CLASSIFY_PROMPT = `You are a relevance filter for Mighty, a free service that helps accident victims understand their personal injury claim value and negotiate with insurance companies.
 
-Answer "yes" ONLY if the post is written by someone who is PERSONALLY dealing with one of these specific situations:
-- They were injured in a car accident, slip and fall, or similar incident and have a claim or question about one
-- They received a settlement offer from an insurance company and want to know if it is fair
-- They are trying to decide whether to hire a personal injury lawyer for their own case
-- Their own insurance claim was denied or disputed
-- They are negotiating with an insurance adjuster about their own injury
+Answer "yes" if the post involves ANY of the following — even if the person is asking on behalf of a family member:
+- A personal injury claim (car accident, slip and fall, workplace injury, etc.)
+- A settlement offer from an insurance company
+- Deciding whether to hire a personal injury or accident lawyer
+- Signing or understanding a PI retainer or contingency agreement
+- Dealing with an insurance adjuster after an injury
+- An insurance claim being denied or undervalued
+- Medical bills or compensation after an accident
+- Negotiating with insurance without a lawyer
 
-Answer "no" for everything else, including:
-- General legal questions not involving personal injury (employment disputes, criminal charges, landlord issues, divorce, etc.)
-- Posts where the person is asking on behalf of someone else with no personal stake
-- News stories, hypotheticals, or curiosity questions ("can a company be liable if...")
-- Posts just describing an accident they witnessed with no personal claim
-- Workers asking about workplace policies (not actual injury claims)
-- Anything that is clearly not a real person seeking help with their own PI or insurance situation
-
-Be conservative. When in doubt, answer "no".
+Answer "no" only if the post is clearly unrelated to personal injury or insurance claims:
+- Criminal charges, divorce, landlord disputes, employment law, immigration
+- General curiosity with no real personal situation (e.g. "hypothetically, could someone sue...")
+- Posts just describing an accident with no question and no personal involvement
 
 Answer only "yes" or "no". No explanation.`;
 

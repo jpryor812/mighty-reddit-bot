@@ -3,13 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const SUBREDDITS = [
-  "legaladvice",
-  "Insurance",
-  "personalfinance",
-  "AskALawyer",
-  "caraccidents",
-  "legaladviceofftopic",
+const SUBREDDITS: Array<{ name: string; limit: number }> = [
+  { name: "legaladvice", limit: 50 },
+  { name: "AskALawyer", limit: 50 },
+  { name: "Insurance", limit: 25 },
+  { name: "personalfinance", limit: 25 },
+  { name: "caraccidents", limit: 25 },
+  { name: "legaladviceofftopic", limit: 25 },
 ];
 
 const UI_REFRESH_INTERVAL = 60;
@@ -25,9 +25,9 @@ interface RedditPost {
   created_utc: number;
 }
 
-async function fetchSubreddit(subreddit: string): Promise<RedditPost[]> {
+async function fetchSubreddit(subreddit: string, limit: number): Promise<RedditPost[]> {
   const res = await fetch(
-    `https://www.reddit.com/r/${subreddit}/new.json?limit=25`,
+    `https://www.reddit.com/r/${subreddit}/new.json?limit=${limit}`,
     { headers: { Accept: "application/json" } }
   );
   if (!res.ok) throw new Error(`${res.status}`);
@@ -48,9 +48,9 @@ async function fetchAndSave(): Promise<{ inserted: number; errors: string[] }> {
 
   const fetchErrors: string[] = [];
 
-  for (const subreddit of SUBREDDITS) {
+  for (const { name, limit } of SUBREDDITS) {
     try {
-      const posts = await fetchSubreddit(subreddit);
+      const posts = await fetchSubreddit(name, limit);
       for (const p of posts) {
         allPosts.push({
           reddit_id: p.id,
@@ -63,7 +63,7 @@ async function fetchAndSave(): Promise<{ inserted: number; errors: string[] }> {
         });
       }
     } catch (err) {
-      fetchErrors.push(`r/${subreddit}: ${err instanceof Error ? err.message : String(err)}`);
+      fetchErrors.push(`r/${name}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
