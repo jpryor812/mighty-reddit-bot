@@ -55,8 +55,8 @@ Answer only "yes" or "no". No explanation.`;
 
 export async function classifyPost(title: string, body: string): Promise<boolean> {
   const response = await getOpenAI().chat.completions.create({
-    model: "gpt-5-nano",
-    max_completion_tokens: 5,
+    model: "gpt-4o-mini",
+    max_completion_tokens: 10,
     messages: [
       { role: "system", content: CLASSIFY_PROMPT },
       { role: "user", content: `Post title: ${title}\n\nPost body: ${body}` },
