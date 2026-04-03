@@ -71,8 +71,9 @@ export async function POST(request: Request) {
         continue;
       }
     } catch (err) {
-      // If Claude call fails, fall back to allowing the post through
       console.error(`Classification failed for ${post.reddit_id}:`, err);
+      skipped++;
+      continue;
     }
 
     try {

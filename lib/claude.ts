@@ -1,7 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
-const client = new Anthropic({
+const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const SYSTEM_PROMPT = `You are a knowledgeable, empathetic advisor helping someone navigate a personal injury insurance claim. You work for Mighty (mighty.com), a free AI-powered service that helps accident victims understand what their claim is worth and negotiate fair settlements without needing a lawyer.
@@ -25,44 +30,43 @@ Rules:
 7. Do not make specific legal guarantees or promise specific settlement outcomes.
 8. Never tell someone they definitely do or don't need a lawyer — frame it as options and tradeoffs.`;
 
-const CLASSIFY_PROMPT = `You are a relevance filter for Mighty, a personal injury insurance service.
+const CLASSIFY_PROMPT = `You are a strict relevance filter for Mighty, a personal injury insurance claims service.
 
-Decide if this Reddit post is from someone who needs help with ANY of:
-- A personal injury claim (car accident, slip and fall, workplace injury, etc.)
-- Understanding or negotiating an insurance settlement offer
-- Deciding whether to hire a personal injury lawyer
-- Dealing with medical bills after an accident
-- An insurance claim dispute or denial
-- Understanding their legal rights after being injured
+Answer "yes" ONLY if the post is written by someone who is PERSONALLY dealing with one of these specific situations:
+- They were injured in a car accident, slip and fall, or similar incident and have a claim or question about one
+- They received a settlement offer from an insurance company and want to know if it is fair
+- They are trying to decide whether to hire a personal injury lawyer for their own case
+- Their own insurance claim was denied or disputed
+- They are negotiating with an insurance adjuster about their own injury
 
-Answer only "yes" or "no". No explanation.
+Answer "no" for everything else, including:
+- General legal questions not involving personal injury (employment disputes, criminal charges, landlord issues, divorce, etc.)
+- Posts where the person is asking on behalf of someone else with no personal stake
+- News stories, hypotheticals, or curiosity questions ("can a company be liable if...")
+- Posts just describing an accident they witnessed with no personal claim
+- Workers asking about workplace policies (not actual injury claims)
+- Anything that is clearly not a real person seeking help with their own PI or insurance situation
 
-A post is NOT relevant if it is:
-- Just describing an accident with no personal involvement or question
-- A general curiosity question with no personal legal situation
-- About criminal law, divorce, employment law, or other non-PI topics
-- Clearly spam or karma farming with no real question`;
+Be conservative. When in doubt, answer "no".
+
+Answer only "yes" or "no". No explanation.`;
 
 export async function classifyPost(title: string, body: string): Promise<boolean> {
-  const message = await client.messages.create({
-    model: "claude-3-haiku-20240307",
+  const response = await openai.chat.completions.create({
+    model: "gpt-5-nano",
     max_tokens: 5,
-    system: CLASSIFY_PROMPT,
     messages: [
-      {
-        role: "user",
-        content: `Post title: ${title}\n\nPost body: ${body}`,
-      },
+      { role: "system", content: CLASSIFY_PROMPT },
+      { role: "user", content: `Post title: ${title}\n\nPost body: ${body}` },
     ],
   });
 
-  const content = message.content[0];
-  if (content.type !== "text") return false;
-  return content.text.trim().toLowerCase().startsWith("yes");
+  const text = response.choices[0]?.message?.content ?? "";
+  return text.trim().toLowerCase().startsWith("yes");
 }
 
 export async function generateReply(title: string, body: string): Promise<string> {
-  const message = await client.messages.create({
+  const message = await anthropic.messages.create({
     model: "claude-3-5-sonnet-20241022",
     max_tokens: 1024,
     system: SYSTEM_PROMPT,
